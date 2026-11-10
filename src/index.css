@@ -1,22 +1,40 @@
 @import "tailwindcss";
 
-@layer base {
-  body {
-    background-color: #0c0a17;
-    color: #e2e8f0;
-    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
-  }
-
-  code, pre {
-    font-family: 'JetBrains Mono', monospace;
-  }
-
-  .ide-border {
-    border-color: rgba(139, 92, 246, 0.25);
-  }
-
-  .ide-panel {
-    background-color: #120f24;
-    border: 1px solid rgba(139, 92, 246, 0.2);
-  }
+/* CompileX — Bauhaus teaching poster. Three primaries, black rules, one geometric sans.
+   Circle = running, triangle = structure, square = data. */
+@theme {
+  --color-paper: #f4f3ee;
+  --color-ink: #111111;
+  --color-red: #d52b1e;
+  --color-blue: #1f4ba5;
+  --color-yellow: #f2c230;
+  --color-stone: #d9d7cf;
+  --color-mute: #5a5852;
+  --font-sans: "Jost", "Futura", "Century Gothic", sans-serif;
+  --font-mono: "Red Hat Mono", ui-monospace, monospace;
 }
+
+@layer base {
+  body { background: var(--color-paper); color: var(--color-ink); font-family: var(--font-sans); font-size: 16px; -webkit-font-smoothing: antialiased; }
+  ::selection { background: var(--color-yellow); color: var(--color-ink); }
+  :focus-visible { outline: 3px solid var(--color-blue); outline-offset: 2px; }
+  input, select, textarea { font: inherit; }
+}
+
+@layer components {
+  .rule { border: 3px solid var(--color-ink); }
+  .display { font-weight: 700; letter-spacing: -0.02em; line-height: 0.95; }
+  .cap { font-weight: 600; text-transform: lowercase; letter-spacing: 0.02em; font-size: 14px; }
+  .bbtn { display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem; height: 44px; padding: 0 1rem; border: 3px solid var(--color-ink); background: var(--color-paper); font-weight: 600; transition: transform 120ms, background 120ms; }
+  .bbtn:hover:not(:disabled) { background: var(--color-yellow); }
+  .bbtn:active:not(:disabled) { transform: translateY(2px); }
+  .bbtn:disabled { opacity: 0.35; cursor: not-allowed; }
+  .bbtn-red { background: var(--color-red); color: #fff; }
+  .bbtn-red:hover:not(:disabled) { background: var(--color-ink); }
+  .bbtn-round { width: 44px; padding: 0; border-radius: 999px; }
+  .tri { width: 0; height: 0; border-left: 0.5em solid transparent; border-right: 0.5em solid transparent; border-bottom: 0.9em solid currentColor; display: inline-block; }
+}
+
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: var(--color-stone); }
+::-webkit-scrollbar-thumb { background: var(--color-ink); }

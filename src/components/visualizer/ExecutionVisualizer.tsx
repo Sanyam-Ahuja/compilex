@@ -1,274 +1,132 @@
 import React, { useEffect } from 'react';
 import { useCompileXStore } from '../../store/useCompileXStore';
 import { PROGRAM_PRESETS } from '../../engine/runtime';
-import { 
-  Play, 
-  Pause, 
-  SkipBack, 
-  SkipForward, 
-  RotateCcw, 
-  Layers, 
-  HardDrive, 
-  Terminal, 
-  Sparkles,
-  Sliders
-} from 'lucide-react';
+import { Circle, Square, Title } from '../Shapes';
+import { Pause, Play, RotateCcw, SkipBack, SkipForward } from 'lucide-react';
+
+const fmt = (v: unknown) => (typeof v === 'string' ? `"${v}"` : JSON.stringify(v));
 
 export const ExecutionVisualizer: React.FC = () => {
-  const {
-    currentPreset,
-    setPreset,
-    currentStepIndex,
-    stepForward,
-    stepBackward,
-    resetExecution,
-    isPlaying,
-    togglePlay,
-    playbackSpeed,
-    setPlaybackSpeed,
-  } = useCompileXStore();
-
+  const { currentPreset, setPreset, currentStepIndex, stepForward, stepBackward, resetExecution, isPlaying, togglePlay, playbackSpeed, setPlaybackSpeed } = useCompileXStore();
   const step = currentPreset.steps[currentStepIndex] || currentPreset.steps[0];
-  const codeLines = currentPreset.code.split('\n');
+  const lines = currentPreset.code.split('\n');
+  const total = currentPreset.steps.length;
+  const atEnd = currentStepIndex >= total - 1;
 
-  // Automatic playback loop
   useEffect(() => {
     if (!isPlaying) return;
-    const interval = setInterval(() => {
-      stepForward();
-    }, playbackSpeed);
-    return () => clearInterval(interval);
+    const t = setInterval(stepForward, playbackSpeed);
+    return () => clearInterval(t);
   }, [isPlaying, playbackSpeed, stepForward]);
 
   return (
-    <div className="space-y-6 text-left">
-      {/* Header & Controls */}
-      <div className="bg-[#161B22] border border-slate-800 rounded-2xl p-5 shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <div className="flex items-center space-x-2 text-purple-400 font-bold mb-1">
-            <Layers className="w-5 h-5" />
-            <h3 className="text-white text-base">Step-by-Step Code Execution & Memory Runtime</h3>
+    <div>
+      <Title shape={<Circle size={44} />} note="Step through a program one line at a time. Watch frames land on the call stack and objects appear on the heap.">
+        Watch it run
+      </Title>
+
+      {/* program picker: each preset is a tab of the poster */}
+      <div className="flex flex-wrap gap-0 mb-6 rule w-fit max-w-full" role="tablist">
+        {PROGRAM_PRESETS.map((p) => {
+          const on = p.id === currentPreset.id;
+          return (
+            <button key={p.id} role="tab" aria-selected={on} onClick={() => setPreset(p.id)}
+              className={`px-4 py-2.5 font-semibold border-r-[3px] border-ink last:border-r-0 ${on ? 'bg-ink text-paper' : 'hover:bg-yellow'}`}>
+              {p.title}
+            </button>
+          );
+        })}
+      </div>
+
+      <div className="grid xl:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)] gap-6">
+        {/* code */}
+        <section className="rule bg-white flex flex-col">
+          <div className="flex items-center justify-between px-4 py-2 border-b-[3px] border-ink">
+            <span className="font-mono text-[14px]">{currentPreset.id}.js</span>
+            <span className="cap text-mute">line {step.line}</span>
           </div>
-          <p className="text-xs text-slate-400 font-sans">
-            Visualizing stack frame allocation, scope chains, recursion unwinding, and heap memory pointers.
-          </p>
-        </div>
+          <ol className="font-mono text-[14.5px] leading-[1.7] py-3 overflow-x-auto flex-1">
+            {lines.map((txt, i) => {
+              const on = i + 1 === step.line;
+              return (
+                <li key={i} className={`grid grid-cols-[3.25rem_1fr] items-center ${on ? 'bg-yellow' : ''}`}>
+                  <span className="flex items-center justify-end gap-2 pr-3 select-none text-mute">
+                    {on && <Circle size={10} />}{i + 1}
+                  </span>
+                  <pre className={`pr-4 ${on ? 'font-bold' : ''}`}>{txt || ' '}</pre>
+                </li>
+              );
+            })}
+          </ol>
+          <div className="bg-ink text-paper p-4 min-h-[88px]">
+            <p className="text-[17px] leading-snug">{step.explanation}</p>
+          </div>
+        </section>
 
-        {/* Preset Selector */}
-        <div className="flex items-center space-x-3">
-          <select
-            value={currentPreset.id}
-            onChange={(e) => setPreset(e.target.value)}
-            className="px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-white font-mono focus:outline-none focus:border-purple-500"
-          >
-            {PROGRAM_PRESETS.map((p) => (
-              <option key={p.id} value={p.id}>
-                {p.title}
-              </option>
-            ))}
-          </select>
-        </div>
-      </div>
-
-      {/* Stepper Playback Toolbar */}
-      <div className="bg-[#161B22] border border-slate-800 rounded-2xl p-4 shadow-xl flex flex-wrap items-center justify-between gap-4">
-        <div className="flex items-center space-x-2">
-          <button
-            onClick={resetExecution}
-            className="p-2 rounded-xl bg-slate-900 border border-slate-800 hover:border-slate-700 text-slate-400 hover:text-white transition-colors"
-            title="Reset to beginning"
-          >
-            <RotateCcw className="w-4 h-4" />
-          </button>
-
-          <button
-            onClick={stepBackward}
-            disabled={currentStepIndex === 0}
-            className="p-2 rounded-xl bg-slate-900 border border-slate-800 hover:border-slate-700 text-slate-300 hover:text-white disabled:opacity-40 transition-colors"
-            title="Step Backward"
-          >
-            <SkipBack className="w-4 h-4" />
-          </button>
-
-          <button
-            onClick={togglePlay}
-            className="px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs flex items-center space-x-1.5 transition-colors shadow-lg shadow-purple-950/40"
-          >
-            {isPlaying ? (
-              <>
-                <Pause className="w-4 h-4 fill-current" />
-                <span>Pause</span>
-              </>
-            ) : (
-              <>
-                <Play className="w-4 h-4 fill-current" />
-                <span>Auto Step</span>
-              </>
-            )}
-          </button>
-
-          <button
-            onClick={stepForward}
-            disabled={currentStepIndex >= currentPreset.steps.length - 1}
-            className="p-2 rounded-xl bg-slate-900 border border-slate-800 hover:border-slate-700 text-slate-300 hover:text-white disabled:opacity-40 transition-colors"
-            title="Step Forward"
-          >
-            <SkipForward className="w-4 h-4" />
-          </button>
-
-          <span className="text-xs font-mono text-slate-400 ml-2">
-            Step <strong className="text-purple-400">{currentStepIndex + 1}</strong> of {currentPreset.steps.length}
-          </span>
-        </div>
-
-        {/* Speed Slider */}
-        <div className="flex items-center space-x-3 text-xs font-mono">
-          <span className="text-slate-400">Step Interval:</span>
-          <input
-            type="range"
-            min={400}
-            max={2000}
-            step={100}
-            value={playbackSpeed}
-            onChange={(e) => setPlaybackSpeed(parseInt(e.target.value, 10))}
-            className="w-24 accent-purple-500"
-          />
-          <span className="text-purple-400 font-bold w-12 text-right">{playbackSpeed}ms</span>
-        </div>
-      </div>
-
-      {/* Two Column Visualizer Layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Code Editor with Line Highlight */}
-        <div className="bg-[#0D1117] border border-slate-800 rounded-2xl p-5 shadow-xl font-mono text-xs flex flex-col justify-between">
+        {/* machine state */}
+        <section className="flex flex-col gap-6 min-w-0">
           <div>
-            <div className="flex items-center justify-between pb-3 mb-3 border-b border-slate-800 text-[11px] text-slate-400">
-              <span className="font-bold text-white uppercase">{currentPreset.id}.js</span>
-              <span className="text-purple-400">Executing Line: {step.line}</span>
-            </div>
-
-            <div className="space-y-0.5">
-              {codeLines.map((lineText, idx) => {
-                const lineNum = idx + 1;
-                const isCurrent = lineNum === step.line;
-
+            <h2 className="display text-[28px] mb-3 flex items-center gap-2"><Circle size={18} /> Call stack <span className="text-mute text-[18px] font-medium">{step.stack.length}</span></h2>
+            <div className="flex flex-col-reverse gap-1.5">
+              {step.stack.map((f, i) => {
+                const top = i === step.stack.length - 1;
                 return (
-                  <div
-                    key={lineNum}
-                    className={`flex items-center px-2 py-0.5 rounded transition-colors ${
-                      isCurrent
-                        ? 'bg-purple-950/60 border-l-2 border-purple-400 text-white font-bold'
-                        : 'text-slate-300 hover:bg-slate-900/40'
-                    }`}
-                  >
-                    <span className={`w-8 text-right pr-3 select-none text-[11px] ${isCurrent ? 'text-purple-400 font-bold' : 'text-slate-600'}`}>
-                      {lineNum}
-                    </span>
-                    <pre className="whitespace-pre font-mono text-[12px]">{lineText}</pre>
+                  <div key={f.id} className={`rule p-3 ${top ? 'bg-red text-white' : 'bg-paper'}`} style={{ marginLeft: `${i * 14}px` }}>
+                    <div className="flex justify-between items-baseline gap-2">
+                      <span className="font-mono font-bold text-[15px]">{f.functionName}()</span>
+                      {f.returnLine && <span className="text-[13px] opacity-80">returns to line {f.returnLine}</span>}
+                    </div>
+                    <div className="font-mono text-[13px] mt-1 flex flex-wrap gap-x-4 gap-y-0.5">
+                      {Object.keys(f.variables).length === 0 && <span className="opacity-70">no locals yet</span>}
+                      {Object.entries(f.variables).map(([k, v]) => <span key={k}>{k} = <b>{fmt(v)}</b></span>)}
+                    </div>
                   </div>
                 );
               })}
             </div>
           </div>
 
-          {/* Explanation Footer */}
-          <div className="mt-6 p-3 bg-slate-900/90 rounded-xl border border-slate-800 text-xs">
-            <span className="text-[10px] font-mono text-purple-400 uppercase font-bold block mb-1">Runtime Instruction:</span>
-            <p className="text-slate-200 leading-relaxed font-sans">{step.explanation}</p>
-          </div>
-        </div>
-
-        {/* Runtime State Panels: Call Stack, Variables, Heap, Console */}
-        <div className="space-y-4">
-          {/* Call Stack Frames */}
-          <div className="p-4 rounded-xl bg-[#161B22] border border-slate-800 shadow-xl space-y-3">
-            <div className="flex items-center justify-between">
-              <h4 className="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center space-x-1.5">
-                <Layers className="w-4 h-4 text-purple-400" />
-                <span>Call Stack Frames ({step.stack.length})</span>
-              </h4>
-              <span className="text-[10px] text-slate-500 font-mono">Top = Active Frame</span>
-            </div>
-
-            <div className="space-y-2">
-              {[...step.stack].reverse().map((frame, idx) => (
-                <div
-                  key={frame.id}
-                  className={`p-3 rounded-xl border transition-all text-xs font-mono ${
-                    idx === 0
-                      ? 'bg-purple-950/40 border-purple-500/60 text-white shadow-md shadow-purple-950/40'
-                      : 'bg-slate-900/60 border-slate-800 text-slate-400'
-                  }`}
-                >
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="font-bold text-white flex items-center space-x-1">
-                      {idx === 0 && <span className="w-2 h-2 rounded-full bg-purple-400 animate-pulse inline-block" />}
-                      <span>{frame.functionName}()</span>
-                    </span>
-                    {frame.returnLine && (
-                      <span className="text-[10px] text-slate-500">Return to line {frame.returnLine}</span>
-                    )}
-                  </div>
-                  <div className="flex items-center space-x-2 text-[11px] text-purple-300/90">
-                    <span className="text-slate-500">Local Scope:</span>
-                    <span>{JSON.stringify(frame.variables)}</span>
-                  </div>
+          <div className="grid sm:grid-cols-2 gap-6">
+            <div className="min-w-0">
+              <h2 className="display text-[24px] mb-3 flex items-center gap-2"><Square size={16} /> Heap</h2>
+              {step.heap.length === 0 ? (
+                <p className="text-mute border-[3px] border-dashed border-stone p-4">Nothing allocated yet.</p>
+              ) : step.heap.map((o) => (
+                <div key={o.id} className="bg-blue text-white p-3 mb-1.5">
+                  <div className="flex justify-between text-[13px]"><span className="font-mono font-bold">{o.id}</span><span>{o.type}</span></div>
+                  <div className="font-mono text-[13px] mt-1 break-all">{JSON.stringify(o.data)}</div>
                 </div>
               ))}
             </div>
-          </div>
-
-          {/* Heap Memory & Console */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {/* Heap Objects */}
-            <div className="p-4 rounded-xl bg-[#161B22] border border-slate-800 shadow-xl space-y-2">
-              <h4 className="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center space-x-1.5">
-                <HardDrive className="w-3.5 h-3.5 text-cyan-400" />
-                <span>Heap Memory</span>
-              </h4>
-
-              {step.heap.length === 0 ? (
-                <div className="py-4 text-center text-[11px] text-slate-500 font-mono">
-                  No dynamic heap allocations
-                </div>
-              ) : (
-                <div className="space-y-2">
-                  {step.heap.map((obj) => (
-                    <div key={obj.id} className="p-2.5 rounded-lg bg-slate-900 border border-slate-800 text-xs font-mono">
-                      <div className="flex justify-between text-[10px] text-slate-400 mb-1">
-                        <span className="text-cyan-400 font-bold">{obj.id}</span>
-                        <span>{obj.type}</span>
-                      </div>
-                      <div className="text-[11px] text-slate-200">
-                        {JSON.stringify(obj.data)}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* Standard Output Console */}
-            <div className="p-4 rounded-xl bg-[#161B22] border border-slate-800 shadow-xl space-y-2">
-              <h4 className="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center space-x-1.5">
-                <Terminal className="w-3.5 h-3.5 text-emerald-400" />
-                <span>stdout Stream</span>
-              </h4>
-
-              {step.consoleOut.length === 0 ? (
-                <div className="py-4 text-center text-[11px] text-slate-500 font-mono">
-                  [Empty stdout]
-                </div>
-              ) : (
-                <div className="p-2.5 rounded-lg bg-slate-950 border border-slate-800/80 font-mono text-xs text-emerald-400 space-y-1">
-                  {step.consoleOut.map((line, idx) => (
-                    <div key={idx}>&gt; {line}</div>
-                  ))}
-                </div>
-              )}
+            <div className="min-w-0">
+              <h2 className="display text-[24px] mb-3">Output</h2>
+              <div className="bg-ink text-yellow font-mono text-[14px] p-3 min-h-[96px]">
+                {step.consoleOut.length === 0 ? <span className="text-paper/50">(nothing printed)</span> : step.consoleOut.map((l, i) => <div key={i}>{l}</div>)}
+              </div>
             </div>
           </div>
+        </section>
+      </div>
+
+      {/* transport */}
+      <div className="sticky bottom-0 mt-8 -mx-4 md:mx-0 bg-paper border-t-[3px] border-ink py-3 px-4 md:px-0 flex flex-wrap items-center gap-3">
+        <button className="bbtn bbtn-round" onClick={resetExecution} aria-label="Back to start"><RotateCcw size={18} /></button>
+        <button className="bbtn bbtn-round" onClick={stepBackward} disabled={currentStepIndex === 0} aria-label="Step back"><SkipBack size={18} /></button>
+        <button className="bbtn bbtn-red min-w-[120px]" onClick={togglePlay} disabled={atEnd && !isPlaying}>
+          {isPlaying ? <><Pause size={18} /> Pause</> : <><Play size={18} /> Play</>}
+        </button>
+        <button className="bbtn bbtn-round" onClick={stepForward} disabled={atEnd} aria-label="Step forward"><SkipForward size={18} /></button>
+        {/* progress as a row of squares */}
+        <div className="flex-1 min-w-[160px] flex gap-[3px] items-center" aria-label={`step ${currentStepIndex + 1} of ${total}`}>
+          {currentPreset.steps.map((_, i) => (
+            <span key={i} className="h-3 flex-1" style={{ background: i < currentStepIndex ? 'var(--color-ink)' : i === currentStepIndex ? 'var(--color-red)' : 'var(--color-stone)' }} />
+          ))}
         </div>
+        <span className="font-mono text-[14px]">{currentStepIndex + 1}/{total}</span>
+        <label className="flex items-center gap-2 text-[14px]">
+          speed
+          <input type="range" min={400} max={2000} step={100} value={2400 - playbackSpeed} onChange={(e) => setPlaybackSpeed(2400 - parseInt(e.target.value, 10))} className="accent-red w-28" />
+        </label>
       </div>
     </div>
   );
