@@ -5,9 +5,10 @@ import {
   Layers, 
   GitBranch, 
   BarChart3, 
-  RotateCcw,
+  RotateCcw, 
   Sparkles,
-  Terminal
+  Terminal,
+  Cpu
 } from 'lucide-react';
 
 export const Navbar: React.FC = () => {
@@ -15,106 +16,106 @@ export const Navbar: React.FC = () => {
   const [showResetConfirm, setShowResetConfirm] = useState(false);
 
   return (
-    <header className="border-b border-slate-800 bg-[#0A0E17]/95 backdrop-blur sticky top-0 z-40">
+    <header className="border-b border-purple-900/40 bg-[#0e0b1f] sticky top-0 z-40">
+      {/* IDE Top Window Bar */}
+      <div className="bg-[#080612] border-b border-purple-950 px-4 py-1 text-[11px] font-mono text-purple-300 flex items-center justify-between">
+        <div className="flex items-center space-x-3">
+          <div className="flex items-center space-x-1.5">
+            <span className="w-2.5 h-2.5 rounded-full bg-rose-500/80 inline-block" />
+            <span className="w-2.5 h-2.5 rounded-full bg-amber-500/80 inline-block" />
+            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500/80 inline-block" />
+          </div>
+          <span className="text-purple-400 font-semibold">CompileX Studio — workspace.ts [ECMAScript AST v11.4]</span>
+        </div>
+        <div className="flex items-center space-x-2 text-[10px] text-purple-400">
+          <span>LEXICAL SCOPE: GLOBAL</span>
+          <span>•</span>
+          <span className="text-pink-400 font-bold">BYTECODE INTERPRETER</span>
+        </div>
+      </div>
+
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
+        <div className="flex items-center justify-between h-14">
           {/* Brand */}
           <div className="flex items-center space-x-3 cursor-pointer" onClick={() => setActiveTab('editor')}>
-            <div className="w-10 h-10 rounded-xl bg-purple-950/60 border border-purple-500/40 flex items-center justify-center shadow-lg shadow-purple-500/20">
-              <Code2 className="w-5 h-5 text-purple-400" />
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-600 to-pink-600 flex items-center justify-center shadow-lg shadow-purple-500/20">
+              <Code2 className="w-4 h-4 text-white" />
             </div>
             <div>
               <div className="flex items-center space-x-2">
-                <span className="font-bold text-lg tracking-tight text-white font-mono">Compile<span className="text-purple-400">X</span></span>
-                <span className="text-[10px] font-semibold uppercase px-1.5 py-0.5 rounded bg-purple-500/10 text-purple-400 border border-purple-500/20 font-mono">
-                  AST & RUNTIME
+                <span className="font-bold text-base tracking-tight text-white font-mono">
+                  Compile<span className="text-pink-400">X</span>
+                </span>
+                <span className="text-[9px] uppercase px-1.5 py-0.2 rounded bg-purple-500/20 text-purple-300 border border-purple-500/30 font-mono">
+                  IDE ENGINE
                 </span>
               </div>
-              <p className="text-[11px] text-slate-400 hidden sm:block">Code Execution & Algorithm Visualization Studio</p>
             </div>
           </div>
 
-          {/* Navigation */}
-          <nav className="hidden md:flex items-center space-x-1 font-mono">
+          {/* IDE Tabs */}
+          <nav className="flex items-center space-x-1 font-mono text-xs">
             <button
               onClick={() => setActiveTab('editor')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-medium flex items-center space-x-1.5 transition-all ${
+              className={`px-3 py-1.5 rounded-md transition-all flex items-center space-x-1.5 ${
                 activeTab === 'editor'
-                  ? 'bg-slate-800 text-purple-400 border border-slate-700 shadow-sm'
-                  : 'text-slate-400 hover:text-white hover:bg-slate-800/50'
+                  ? 'bg-purple-900/50 text-pink-300 border border-purple-500/50 font-bold'
+                  : 'text-purple-400/70 hover:text-white hover:bg-purple-950/40'
               }`}
             >
               <Terminal className="w-3.5 h-3.5" />
-              <span>Execution Visualizer</span>
+              <span>Step Runtime</span>
             </button>
 
             <button
               onClick={() => setActiveTab('ast')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-medium flex items-center space-x-1.5 transition-all ${
+              className={`px-3 py-1.5 rounded-md transition-all flex items-center space-x-1.5 ${
                 activeTab === 'ast'
-                  ? 'bg-slate-800 text-purple-400 border border-slate-700 shadow-sm'
-                  : 'text-slate-400 hover:text-white hover:bg-slate-800/50'
+                  ? 'bg-purple-900/50 text-pink-300 border border-purple-500/50 font-bold'
+                  : 'text-purple-400/70 hover:text-white hover:bg-purple-950/40'
               }`}
             >
               <GitBranch className="w-3.5 h-3.5" />
-              <span>AST Explorer</span>
+              <span>AST Syntax Tree</span>
             </button>
 
             <button
               onClick={() => setActiveTab('algorithms')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-medium flex items-center space-x-1.5 transition-all ${
+              className={`px-3 py-1.5 rounded-md transition-all flex items-center space-x-1.5 ${
                 activeTab === 'algorithms'
-                  ? 'bg-slate-800 text-purple-400 border border-slate-700 shadow-sm'
-                  : 'text-slate-400 hover:text-white hover:bg-slate-800/50'
+                  ? 'bg-purple-900/50 text-pink-300 border border-purple-500/50 font-bold'
+                  : 'text-purple-400/70 hover:text-white hover:bg-purple-950/40'
               }`}
             >
-              <BarChart3 className="w-3.5 h-3.5 text-cyan-400" />
+              <BarChart3 className="w-3.5 h-3.5" />
               <span>Algorithm Studio</span>
             </button>
           </nav>
 
-          {/* Reset button */}
+          {/* Right Action */}
           <div className="flex items-center space-x-2">
             <button
               onClick={() => setShowResetConfirm(true)}
-              className="p-1.5 text-slate-400 hover:text-slate-200 hover:bg-slate-800 rounded-lg border border-slate-800 transition-colors"
-              title="Reset Sandbox"
+              className="px-2.5 py-1 rounded-md bg-purple-950/60 hover:bg-purple-900 border border-purple-800/60 text-purple-300 text-xs font-mono transition-all flex items-center space-x-1"
             >
-              <RotateCcw className="w-4 h-4" />
+              <RotateCcw className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Reset State</span>
             </button>
           </div>
-        </div>
-
-        {/* Mobile Nav */}
-        <div className="flex md:hidden overflow-x-auto py-2 space-x-1 border-t border-slate-800/80 font-mono">
-          {(['editor', 'ast', 'algorithms'] as const).map((tab) => (
-            <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              className={`px-2.5 py-1 rounded text-xs whitespace-nowrap capitalize ${
-                activeTab === tab ? 'bg-purple-500/20 text-purple-400 border border-purple-500/30' : 'text-slate-400'
-              }`}
-            >
-              {tab}
-            </button>
-          ))}
         </div>
       </div>
 
       {showResetConfirm && (
-        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-[#161b22] border border-slate-700 rounded-2xl max-w-sm w-full p-5 shadow-2xl">
-            <div className="flex items-center space-x-3 text-purple-400 mb-3">
-              <RotateCcw className="w-6 h-6" />
-              <h3 className="font-semibold text-white text-base">Reset CompileX State?</h3>
-            </div>
-            <p className="text-xs text-slate-300 mb-4 leading-relaxed font-sans">
-              This will restore the default recursive factorial preset, reset the execution stepper, and reseed the algorithm visualization.
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-[#120f24] border border-purple-800 p-6 max-w-sm w-full font-mono text-purple-200 shadow-2xl rounded-xl">
+            <h3 className="text-sm font-bold text-pink-400">Reset Runtime Environment?</h3>
+            <p className="text-xs text-purple-300/70 mt-2">
+              All call stack frames, variable symbol tables, and AST parsing nodes will be reinitialized.
             </p>
-            <div className="flex justify-end space-x-2">
+            <div className="mt-4 flex justify-end space-x-2 text-xs">
               <button
                 onClick={() => setShowResetConfirm(false)}
-                className="px-3 py-1.5 rounded-lg text-xs font-medium text-slate-300 hover:bg-slate-800"
+                className="px-3 py-1 rounded bg-purple-950 border border-purple-800 text-purple-300"
               >
                 Cancel
               </button>
@@ -123,9 +124,9 @@ export const Navbar: React.FC = () => {
                   resetAll();
                   setShowResetConfirm(false);
                 }}
-                className="px-3 py-1.5 rounded-lg text-xs font-medium bg-purple-600 hover:bg-purple-500 text-white font-semibold"
+                className="px-3 py-1 rounded bg-pink-600 text-white font-bold hover:bg-pink-500"
               >
-                Reset
+                Reset Studio
               </button>
             </div>
           </div>
